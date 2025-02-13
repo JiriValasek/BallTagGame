@@ -7,23 +7,36 @@ public class AudioManager : MonoBehaviour
     [SerializeField] AudioSource musicSource;
     [SerializeField] AudioSource effectsSource;
 
-    [Header("Audio Clip")]
-    [SerializeField] AudioClip background;
-    [SerializeField] AudioClip lifeExtension;
-    [SerializeField] AudioClip jump;
-    [SerializeField] AudioClip teleport;
-    [SerializeField] AudioClip speedUp;
-    [SerializeField] AudioClip slowDown;
-    [SerializeField] AudioClip death;
+    [Header("Audio Clips")]
+    public AudioClip background;
+    public AudioClip pickUp;
+    public AudioClip jump;
+    public AudioClip teleport;
+    public AudioClip speedUp;
+    public AudioClip slowDown;
+    public AudioClip death;
+    public AudioClip button;
+
+    private void Awake()
+    {
+        musicSource.enabled = true;
+        effectsSource.enabled = true;
+    }
 
     private void Start()
     {
-        musicSource.clip = background;
-        musicSource.Play();
+        if (background != null && effectsSource.isActiveAndEnabled)
+        {
+            musicSource.clip = background;
+            musicSource.Play();
+        }   
     }
 
     public void playEffect(AudioClip effect)
     {
-        effectsSource.PlayOneShot(effect);
+        if (effect != null && effectsSource.isActiveAndEnabled)
+        {
+            effectsSource.PlayOneShot(effect);
+        }
     }
 }

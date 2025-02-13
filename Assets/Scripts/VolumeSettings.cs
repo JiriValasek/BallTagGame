@@ -36,6 +36,7 @@ public class VolumeSettings : MonoBehaviour
         }
         audioMixer.SetFloat("musicVolume", volume);
         PlayerPrefs.SetFloat(MUSIC_VOLUME_KEY, volume);
+        PlayerPrefs.Save();
     }
 
     public void SetEffectsVolume()
@@ -47,6 +48,7 @@ public class VolumeSettings : MonoBehaviour
         }
         audioMixer.SetFloat("effectsVolume", volume);
         PlayerPrefs.SetFloat(EFFECTS_VOLUME_KEY, volume);
+        PlayerPrefs.Save();
     }
 
     public void StashVolumes()
@@ -65,10 +67,12 @@ public class VolumeSettings : MonoBehaviour
         if (this.oldMusicSliderValue != float.NaN)
         {
              musicSlider.value = this.oldMusicSliderValue;
+            SetMusicVolume();
         }
         if (this.oldEffectsSliderValue != float.NaN)
         {
             effectsSlider.value = this.oldEffectsSliderValue;
+            SetEffectsVolume();
         }
     }
 
