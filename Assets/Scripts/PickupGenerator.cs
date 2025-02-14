@@ -35,9 +35,9 @@ public class PickupGenerator : MonoBehaviour
             var newPosition = GetRandomGameBoardLocation();
             if (NavMesh.SamplePosition(newPosition, out _, 0, 1 << NavMesh.GetAreaFromName("Walkable")))
             {
+                pickups[pickupInd].GetComponent<Bouncer>().basePosition = newPosition;
                 pickups[pickupInd].GetComponent<MeshRenderer>().enabled = true;
                 pickups[pickupInd].GetComponent<BoxCollider>().enabled = true;
-                pickups[pickupInd].GetComponent<Bouncer>().basePosition = newPosition;
                 elapsedTime = 0f;
             }
             
