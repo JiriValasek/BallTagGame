@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity Web Player | BallTag</title>
+    <title>BallTag Game | Jiri Valasek</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
@@ -52,12 +52,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/Web.loader.js";
+      var loaderUrl = buildUrl + "/builds.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/Web.data.br",
-        frameworkUrl: buildUrl + "/Web.framework.js.br",
-        codeUrl: buildUrl + "/Web.wasm.br",
+        dataUrl: buildUrl + "/builds.data",
+        frameworkUrl: buildUrl + "/builds.framework.js",
+        codeUrl: buildUrl + "/builds.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "JiriValasek",
         productName: "BallTag",
