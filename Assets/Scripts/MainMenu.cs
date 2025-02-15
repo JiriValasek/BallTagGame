@@ -1,8 +1,13 @@
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+
+
+    [DllImport("__Internal")]
+    private static extern void closewindow();
 
     /// <summary>
     /// Function loading a scene with build index 1, for testing.
@@ -18,5 +23,6 @@ public class MainMenu : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
+        closewindow();
     }
 }

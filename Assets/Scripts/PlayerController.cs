@@ -103,6 +103,9 @@ namespace BallTag
         /** Audio manager for playing sounds based on some events. */
         private AudioManager audioManager;
 
+        // Touch
+        private Vector2 touchStartPosition;
+
         private void Awake()
         {
             Time.timeScale = 1f;
@@ -125,7 +128,6 @@ namespace BallTag
             Physics.gravity *= gravityModifier;
         }
 
-        // This function is called when a move input is detected.
         private void OnMove(InputValue movementValue)
         {
             // Convert the input value into a Vector2 for movement.
@@ -133,8 +135,36 @@ namespace BallTag
             // Store the X and Y components of the movement.
             movementX = movementVector.x;
             movementY = movementVector.y;
+            Debug.Log(String.Format("key {0}:{1}",movementX,movementY));
             enemyController.started = true;
             started = true;
+        }
+
+        private void OnPrimaryStartPosition(InputValue positionValue)
+        {
+            // Convert the input value into a Vector2 for movement.
+            touchStartPosition = positionValue.Get<Vector2>();
+            enemyController.started = true;
+            started = true;
+        }
+
+        private void OnPrimaryPosition(InputValue positionValue)
+        {
+            // Convert the input value into a Vector2 for movement.
+            Vector2 movementVector = positionValue.Get<Vector2>() - touchStartPosition;
+            // Store the X and Y components of the movement.
+            movementX = movementVector.normalized.x;
+            movementY = movementVector.normalized.y;
+        }
+        private void OnPrimaryPhase(InputValue phaseValue)
+        {
+            if (phaseValue.Get<UnityEngine.InputSystem.TouchPhase>() == UnityEngine.InputSystem.TouchPhase.Ended ||
+                phaseValue.Get<UnityEngine.InputSystem.TouchPhase>() == UnityEngine.InputSystem.TouchPhase.Canceled)
+            {
+                touchStartPosition = Vector2.zero;
+                movementX = 0;
+                movementY = 0;
+            }
         }
 
         private void OnJump(InputValue jumpValue)

@@ -2312,7 +2312,7 @@ MonoBehaviour:
   musicSource: {fileID: 882560847}
   effectsSource: {fileID: 2111750215}
   background: {fileID: 8300000, guid: ce2bdc71de8221046b5109f02c551f46, type: 3}
-  lifeExtension: {fileID: 8300000, guid: 53b3ac3e2478e437ea06485e505fad65, type: 3}
+  pickUp: {fileID: 0}
   jump: {fileID: 8300000, guid: 1552692ea72704a318dd896eedb1b81a, type: 3}
   teleport: {fileID: 8300000, guid: 94a989b6458bc48e8b547496585e2654, type: 3}
   speedUp: {fileID: 8300000, guid: 9631fa6d9549845db9894dc647a2967e, type: 3}
@@ -3147,7 +3147,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a9ee2a6799055544916899819f9db20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelButtonView: {fileID: 895437079}
+  levelButtonParent: {fileID: 895437079}
 --- !u!1 &1040718348
 GameObject:
   m_ObjectHideFlags: 0
