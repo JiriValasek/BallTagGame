@@ -87,7 +87,7 @@ Levels:
 
 -   Player control -- GREEN
 
--   3^rd^ person camera control -- GREEN
+-   3rd person camera control -- GREEN
 
 -   Simple enemy evading/catching -- GREEN
 
