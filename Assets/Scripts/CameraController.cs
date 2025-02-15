@@ -1,18 +1,18 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
+[RequireComponent(typeof(Camera))]
 public class CameraController : MonoBehaviour
 {
-    // Reference to the player GameObject.
+
+    [Tooltip("Reference to the player GameObject with a RigidBody.")]
     public GameObject player;
 
-    // The distance between the camera and the player.
+    /** The distance between the camera and the player. */
     private Vector3 offset;
 
+    // Camera movement configuration
     [Tooltip( "Ratio used to smooth out changes\n" +
         "especially for small speeds.") ]
     [Range(0.01f,0.99f)]
@@ -29,15 +29,12 @@ public class CameraController : MonoBehaviour
         "removes 90deg camera flicking when stationary.")]
     public float ignoreVelocity = 1e-12f;
 
-
-    // Start is called before the first frame update.
     void Start()
     {
         // Calculate the initial offset between the camera's position and the player's position.
         offset = transform.position - player.transform.position;
     }
 
-    // LateUpdate is called once per frame after all Update functions have been completed.
     void LateUpdate()
     {
         // Maintain the same offset between the camera and player throughout the game.

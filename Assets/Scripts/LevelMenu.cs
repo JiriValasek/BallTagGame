@@ -4,9 +4,14 @@ using UnityEngine.UI;
 
 public class LevelMenu : MonoBehaviour
 {
-
-    public GameObject levelButtonView;
+    // References to UI GameObjects
+    [Tooltip("Parent GameObject for all level buttons.")]
+    public GameObject levelButtonParent;
+    /** List of buttons for each level in ascending order. */
     private Button[] levelButtons;
+
+    // Player preferences keys
+    /** PlayerPrefs key for unlocked level based on finished levels. */
     private const string UNLOCKED_LEVEL_KEY = "UnlockedLevel";
 
     private void Awake()
@@ -39,11 +44,11 @@ public class LevelMenu : MonoBehaviour
 
     private void GetLevelButtons()
     {
-        int childCount = levelButtonView.transform.childCount;
+        int childCount = levelButtonParent.transform.childCount;
         levelButtons = new Button[childCount];
         for(int i = 0; i < childCount; i++)
         {
-            levelButtons[i] = levelButtonView.transform.GetChild(i).GetComponent<Button>();
+            levelButtons[i] = levelButtonParent.transform.GetChild(i).GetComponent<Button>();
         }
     }
 }

@@ -2433,6 +2433,7 @@ MonoBehaviour:
   stateText: {fileID: 1687356749}
   endMenu: {fileID: 1287782397}
   navMeshAgent: {fileID: 0}
+  started: 0
 --- !u!195 &502475851
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -6855,7 +6856,7 @@ MonoBehaviour:
   protectionText: {fileID: 453153273}
   tagOffset: 0
   enemyController: {fileID: 502475850}
-  powerUpPeriod: 5
+  powerUpPeriod: 10
   speedUpRatio: 0.5
   SpeedUpIcon: {fileID: 1613457463}
   jumpingIcon: {fileID: 1206508280}
@@ -6892,7 +6893,7 @@ MonoBehaviour:
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 820253707}
 --- !u!54 &1659919483
 Rigidbody:
   m_ObjectHideFlags: 0

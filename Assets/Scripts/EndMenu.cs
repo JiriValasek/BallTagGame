@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class EndMenu : MonoBehaviour
 {
+    // References to the variable elements of the end menu
     [Tooltip("End panel to be shown when player won/lost.")]
     [SerializeField] GameObject endPanel;
     [Tooltip("End title to be shown to the player.")]
@@ -12,6 +13,11 @@ public class EndMenu : MonoBehaviour
     [Tooltip("Next level button to be disabled if user lost.")]
     [SerializeField] Button nextButton;
 
+    /// <summary>
+    /// Function stopping the game and showing options what to
+    /// do next based on the winner.
+    /// </summary>
+    /// <param name="playerWon">Boolean directing dialog configuration.</param>
     public void End(bool playerWon)
     {
         if (playerWon)
@@ -28,12 +34,18 @@ public class EndMenu : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    /// <summary>
+    /// Function for going to main menu scene.
+    /// </summary>
     public void Home()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("Main Menu");
     }
 
+    /// <summary>
+    /// Function for continuing to the next level if awailable or main menu otherwise.
+    /// </summary>
     public void Next()
     {
         Time.timeScale = 1f;
@@ -48,6 +60,9 @@ public class EndMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Function restarting the current level.
+    /// </summary>
     public void Restart()
     {
         Time.timeScale = 1f;

@@ -3,10 +3,12 @@ using UnityEngine;
 public class AudioManager : MonoBehaviour
 {
 
+    // Audio sources
     [Header("Audio Source")]
     [SerializeField] AudioSource musicSource;
     [SerializeField] AudioSource effectsSource;
 
+    // AudioClips for playing from scripts
     [Header("Audio Clips")]
     public AudioClip background;
     public AudioClip pickUp;
@@ -19,12 +21,14 @@ public class AudioManager : MonoBehaviour
 
     private void Awake()
     {
+        // Enable sources
         musicSource.enabled = true;
         effectsSource.enabled = true;
     }
 
     private void Start()
     {
+        // Play background, don't forget to tick out 'loop' at the sample
         if (background != null && effectsSource.isActiveAndEnabled)
         {
             musicSource.clip = background;
@@ -32,6 +36,10 @@ public class AudioManager : MonoBehaviour
         }   
     }
 
+    /// <summary>
+    /// Function from playing effects from UI buttons or GameObject scripts.
+    /// </summary>
+    /// <param name="effect">Music sample, for scripts use one of public ones in this class.</param>
     public void playEffect(AudioClip effect)
     {
         if (effect != null && effectsSource.isActiveAndEnabled)

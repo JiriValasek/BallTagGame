@@ -1,10 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using TMPro;
 using System;
 using System.Collections;
-using Unity.VisualScripting;
-using UnityEngine.AI;
 using UnityEngine.UI;
 
 namespace BallTag
@@ -38,7 +35,7 @@ namespace BallTag
         public float jumpForce = 500;
         [Tooltip("Gravity modifier to have nicer jumps.")]
         public float gravityModifier = 1;
-        // prevent double jumping
+        /** Control variable for jumping based on being on the ground (or another object) */
         private bool isOnGround = true;
 
         // Tagging
@@ -58,7 +55,6 @@ namespace BallTag
         /** Tag game object, showing who is seeking. */
         private GameObject tagObject;
         /** Protection game object, showing who is protected from being tagged. */
-        //[Tooltip("Object marking character as protected from being tagged.")]
         private GameObject protectionObject;
         [Tooltip("Tag height offset from the player center.")]
         public float tagOffset = 0.0f;
@@ -89,6 +85,8 @@ namespace BallTag
         // Life
         /** Remaining life. */
         private float life;
+        /** Control variable to detect user started to play. */
+        private bool started = false;
         [Min(0f)]
         [Tooltip("Life boost in seconds.")]
         public float lifeBoost = 3f;
@@ -102,6 +100,7 @@ namespace BallTag
         public EndMenu endMenu;
 
         // Audio
+        /** Audio manager for playing sounds based on some events. */
         private AudioManager audioManager;
 
         private void Awake()
@@ -113,15 +112,16 @@ namespace BallTag
             // Get tag & protection object
             tagObject = GameObject.FindWithTag("Tag");
             protectionObject = GameObject.FindWithTag("Protection");
+
             audioManager = GameObject.FindWithTag("Audio").GetComponent<AudioManager>();
-            life = startLife;
-            jumpingElapsed = powerUpPeriod; // disable on start
-            speedUpElapsed = powerUpPeriod; // disable on start
+            life = startLife; // init life amount
+            jumpingElapsed = powerUpPeriod; // disable by setting to expired
+            speedUpElapsed = powerUpPeriod; // disable by setting to expired
         }
 
-        void Start()
+        private void Start()
         {
-            // Update Gravity to have slower falls
+            // Update Gravity to have slower/faster falls
             Physics.gravity *= gravityModifier;
         }
 
@@ -133,18 +133,23 @@ namespace BallTag
             // Store the X and Y components of the movement.
             movementX = movementVector.x;
             movementY = movementVector.y;
+            enemyController.started = true;
+            started = true;
         }
 
-
-        private void Update()
+        private void OnJump(InputValue jumpValue)
         {
             // Jumping, only when on the ground (or in contact with other ground subobject)
-            if (Input.GetButtonDown("Jump") && isOnGround && jumpingActive)
+            if (isOnGround && jumpingActive)
             {
                 audioManager.playEffect(audioManager.jump);
                 rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 isOnGround = false;
             }
+        }
+
+        private void Update()
+        {
             ProcessJumping();
             if (hasTag && !enemyController.isProtected)
             {
@@ -189,7 +194,6 @@ namespace BallTag
             }
         }
 
-
         void OnTriggerEnter(Collider other)
         {
             // Apply power-ups
@@ -211,16 +215,6 @@ namespace BallTag
             other.gameObject.GetComponent<MeshRenderer>().enabled = false;
             other.gameObject.GetComponent<BoxCollider>().enabled = false;
         }
-
-        private void Carry(GameObject what)
-        {
-            what.transform.position = new Vector3(
-                transform.position.x,
-                transform.position.y + transform.localScale.y + tagOffset,
-                transform.position.z
-                );
-        }
-
         private void OnCollisionEnter(Collision collision)
         {
             if (collision.gameObject.CompareTag("Enemy"))
@@ -242,7 +236,25 @@ namespace BallTag
             isOnGround = true;
         }
 
+        /// <summary>
+        /// Move carried objects with the enemy.
+        /// </summary>
+        /// <param name="what">GameObject carried by the enemy.</param>
+        private void Carry(GameObject what)
+        {
+            what.transform.position = new Vector3(
+                transform.position.x,
+                transform.position.y + transform.localScale.y + tagOffset,
+                transform.position.z
+                );
+        }
 
+        /// <summary>
+        /// Function conrolling the ability to jump.
+        /// </summary>
+        /// <param name="start">
+        /// True to start jumping, false to just update timeout and stop jumping if expired.
+        /// </param>
         private void ProcessJumping(bool start = false)
         {
             if (start)
@@ -259,6 +271,12 @@ namespace BallTag
             jumpingIcon.SetActive(jumpingActive);
         }
 
+        /// <summary>
+        /// Function conrolling the temporary speed boost.
+        /// </summary>
+        /// <param name="start">
+        /// True to start boosting, false to just update timeout and stop boosting if expired.
+        /// </param>
         private void ProcessSpeedUp(bool start = false)
         {
             if (start)
@@ -275,6 +293,12 @@ namespace BallTag
             speedUpActive = speedUpElapsed < powerUpPeriod;
             SpeedUpIcon.SetActive(speedUpActive);
         }
+
+        /// <summary>
+        /// Function that updates amount of life and checks
+        /// if the player lost in which case it ends the level.
+        /// </summary>
+        /// <param name="boost">Level boost to add if obtained.</param>
         private void ProcessLife(float boost = 0f)
         {
             if (boost > 0f)
@@ -284,7 +308,7 @@ namespace BallTag
             }
             else
             {
-                life -= Time.deltaTime;
+                life -= started ? Time.deltaTime : 0;
             }
             lifeIndicator.value = Mathf.Max(Mathf.Min(life / startLife, 1), 0);
             if (life < 0f)
@@ -293,6 +317,11 @@ namespace BallTag
             }
         }
 
+        /// <summary>
+        /// Coroutine controlling protection state of player/enemy.
+        /// </summary>
+        /// <param name="who"></param>
+        /// <returns>Timeout to run again only after it expired.</returns>
         IEnumerator Protect(MonoBehaviour who)
         {
             // Start protection

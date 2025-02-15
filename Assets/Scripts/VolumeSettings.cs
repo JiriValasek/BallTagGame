@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class VolumeSettings : MonoBehaviour
@@ -10,23 +9,32 @@ public class VolumeSettings : MonoBehaviour
     [SerializeField] private Slider musicSlider;
     [SerializeField] private Slider effectsSlider;
 
-    // Keys for PlayerPrefs
+    // Player preferences keys
+    /** PlayerPrefs key music volume in dB. */
     private const string MUSIC_VOLUME_KEY = "musicVolumeSetting";
+    /** PlayerPrefs key SFX volume in dB. */
     private const string EFFECTS_VOLUME_KEY = "effectsVolumeSetting";
 
     // Old values for change reset
+    /** Music volume in dB when settings were opened to be able to cancel. */
     private float oldMusicSliderValue = float.NaN;
+    /** SFX volume in dB when settings were opened to be able to cancel. */
     private float oldEffectsSliderValue = float.NaN;
 
 
     private void Start()
     {
+        // Try to load preferences and update sliders accordingly
         LoadVolume();
         // Init volumes by initial slider positions
         SetMusicVolume();
         SetEffectsVolume();
     }
 
+    /// <summary>
+    /// Function converting linear slider motion to logarithmic music volume scale,
+    /// setting it to the music source and saving it to preferences.
+    /// </summary>
     public void SetMusicVolume()
     {
         float volume = 0f;
@@ -39,6 +47,10 @@ public class VolumeSettings : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// Function converting linear slider motion to logarithmic SFX volume scale,
+    /// setting it to the SFX source and saving it to preferences.
+    /// </summary>
     public void SetEffectsVolume()
     {
         float volume = 0f;
@@ -51,6 +63,9 @@ public class VolumeSettings : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// Function for stashing old preferences when audio setting are opened.
+    /// </summary>
     public void StashVolumes()
     {
         if (musicSlider != null)
@@ -62,6 +77,11 @@ public class VolumeSettings : MonoBehaviour
             this.oldEffectsSliderValue = effectsSlider.value;
         }
     }
+
+
+    /// <summary>
+    /// Function for restoring stashed preferences when audio setting chages are canceled.
+    /// </summary>
     public void RestoreVolumes()
     {
         if (this.oldMusicSliderValue != float.NaN)
@@ -76,6 +96,9 @@ public class VolumeSettings : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Function loading music and SFX volume preferences and updating sliders if available.
+    /// </summary>
     private void LoadVolume()
     {
         if (PlayerPrefs.HasKey(MUSIC_VOLUME_KEY))

@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityHFSM;
 
 namespace BallTag
 {
@@ -60,7 +59,7 @@ namespace BallTag
         [Tooltip("Player controller script to read if it's protected.")]
         public PlayerController playerController;
 
-        // Hiding
+        // Hiding related
         [Header("Hiding")]
         [Tooltip("Number of tries for finding a location where to hide.")]
         public int hideTries = 10;
@@ -85,9 +84,12 @@ namespace BallTag
         private Vector3 lastPosition;
 
 
-        // Rotationg
+        // Material texture rotation
+        /** Last rotation around the x axis. */
         private float xRotation = 0f;
+        /** Last rotation around the z axis. */
         private float zRotation = 0f;
+        /** Renderer of the enemy body to shift the texture. */
         private Renderer enemyRenderer;
 
         // Life related
@@ -96,7 +98,9 @@ namespace BallTag
         public float startLife = 60f;
         [Tooltip("Slider displaying remaining life.")]
         public Slider lifeIndicator;
+        /** The amount of life remaining. */
         private float life;
+
         // Panel related
         [Header("Panel")]
         [Tooltip("Text where to show enemy state.")]
@@ -104,24 +108,29 @@ namespace BallTag
         [Tooltip("Script controlling end menu.")]
         public EndMenu endMenu;
 
-        // Reference to the NavMeshAgent component for pathfinding.
+        /* Reference to the NavMeshAgent component for pathfinding. */
         [HideInInspector]
         public NavMeshAgent navMeshAgent;
-        private bool started = false;
-        private Vector3 oldPosition;
+        [HideInInspector]
+        /** Control variable for initial waiting state. */
+        public bool started = false;
 
+        // Player preferences keys
+        /** PlayerPrefs key for unlocked level in build indices. */
         private const string REACHED_IND_KEY = "ReachedIndex";
+        /** PlayerPrefs key for unlocked level based on finished levels. */
         private const string UNLOCKED_LEVEL_KEY = "UnlockedLevel";
 
         private void Awake()
         {
-            // Get and store the NavMeshAgent component attached to this object.
+            // Save current NavMesh agent configuration as a basis for changes.
             navMeshAgent = GetComponent<NavMeshAgent>();
             originalSpeed = navMeshAgent.speed;
             originalAngulraSpeed = navMeshAgent.angularSpeed;
             originalAcceleration = navMeshAgent.acceleration;
-            oldPosition = transform.position;
+            // Init variables for hiding and rendering
             lastPosition = hidingSpot = transform.position;
+            // Get
             enemyRenderer = enemyBody.GetComponent<Renderer>();
             // Get tag & protection object
             tagObject = GameObject.FindWithTag("Tag");
@@ -136,17 +145,65 @@ namespace BallTag
         }
 
         // Update is called once per frame.
-        void Update()
+        private void Update()
         {
-            // If there's a reference to the player...
-            if (!started && !Input.anyKey)
+            ProcessStates();
+        }
+
+        private void LateUpdate()
+        {
+            // Update tag/protection
+            if (hasTag)
+            {
+                Carry(tagObject);
+            }
+            if (isProtected)
+            {
+                Carry(protectionObject);
+            }
+            // Update material
+            RotateBody();
+            // update position for navigation and rendering
+            lastPosition = transform.position;
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            // Apply power-ups
+            if (other.gameObject.CompareTag("Jumping"))
+            {
+                // Debug.Log("Enemy can jump");
+                // Allow NavMeshLinks?
+            }
+            if (other.gameObject.CompareTag("Life"))
+            {
+                ProcessLife(5f);
+                // Debug.Log("Enemy got new life.");
+            }
+            if (other.gameObject.CompareTag("SpeedUp"))
+            {
+                // Debug.Log("Enemy is faster?");
+                // Change NavMeshAgent speeds?
+            }
+
+            // Deactivate the collided object (making it disappear).
+            other.gameObject.GetComponent<MeshRenderer>().enabled = false;
+            other.gameObject.GetComponent<BoxCollider>().enabled = false;
+        }
+
+        /// <summary>
+        /// Function processing the states of the enemy.
+        /// </summary>
+        private void ProcessStates()
+        {
+            // Wait for the player to start playing
+            if (!started)
             {
                 stateText.text = "Waiting.";
                 return;
             }
-            started = true;
 
-            // Seek state
+            // Seek state after protection period
             if (hasTag && !playerController.isProtected)
             {
                 stateText.text = "Seeking.";
@@ -155,7 +212,7 @@ namespace BallTag
                 ProcessLife();
             }
 
-            // Idle state
+            // Idle state during protection period
             if (hasTag && playerController.isProtected)
             {
                 stateText.text = "Idling.";
@@ -179,24 +236,9 @@ namespace BallTag
             Charging();
         }
 
-        private void FixedUpdate()
-        {
-            // Update tag/protection
-            if (hasTag)
-            {
-                Carry(tagObject);
-            }
-            if (isProtected)
-            {
-                Carry(protectionObject);
-            }
-        }
-
-        void LateUpdate()
-        {
-            RotateBody();
-        }
-
+        /// <summary>
+        /// Process seek state, update NavMesh agent destination.
+        /// </summary>
         private void Seek()
         {
             if (!player.IsDestroyed())
@@ -207,10 +249,14 @@ namespace BallTag
             }
         }
 
+        /// <summary>
+        /// Proces hiding statate. Update NavMeshAgent destination if necessary, avoid the player.
+        /// </summary>
         private void Hide()
         {
             if (!player.IsDestroyed())
             {
+                // Get new enemy destination if necessary
                 if ((hidingSpot - transform.position).magnitude < hidingSpotThreshold ||
                     (lastPosition - transform.position).magnitude < hidingStuckDistance)
                 {
@@ -236,7 +282,9 @@ namespace BallTag
                         for (int i = 0; i < hideTries; i++)
                         {
                             newHidingSpot = RandomNavmeshLocation(hideInRadius);
-                            if ((newHidingSpot - player.transform.transform.position).magnitude > playerAvoidRadius)
+                            // Ignore new hiding spots too close to current position or the player
+                            if ((newHidingSpot - player.transform.transform.position).magnitude > playerAvoidRadius && 
+                                (newHidingSpot - transform.position).magnitude > hidingSpotThreshold)
                             {
                                 hidingSpot = newHidingSpot;
                                 break;
@@ -246,11 +294,10 @@ namespace BallTag
                 }
 
                 // Set the enemy's destination to the hiding spot
-                lastPosition = transform.position;
                 navMeshAgent.SetDestination(hidingSpot);
                 navMeshAgent.isStopped = false;
 
-                // Avoid Player if near by
+                // Avoid Player if nearby
                 var vectToPlayer = (player.transform.position - transform.position);
                 if (vectToPlayer.magnitude < playerAvoidRadius)
                 {
@@ -264,25 +311,29 @@ namespace BallTag
 
         }
 
+        /// <summary>
+        /// Rotate body to have more persuasive motion.
+        /// </summary>
         private void RotateBody()
         {
             // Rotationg 
             var newPosition = transform.position;
-            var movement = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.up) * (oldPosition - newPosition);
-            oldPosition = newPosition;
+            var movement = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.up) * (lastPosition - newPosition);
             if (!enemyBody.IsDestroyed())
             {
                 var oldRotation = enemyBody.transform.rotation.eulerAngles;
                 enemyBody.transform.Rotate(-oldRotation.x, -oldRotation.y, -oldRotation.z);
                 xRotation += Mathf.Rad2Deg * 2 * movement.z / (enemyBody.transform.localScale.z) + 360;
                 zRotation += Mathf.Rad2Deg * 2 * movement.x / (enemyBody.transform.localScale.x) + 360;
-                //enemyBody.transform.Rotate( xRotation, 0, zRotation, Space.World);
                 xRotation %= 360;
                 zRotation %= 360;
                 enemyRenderer.material.mainTextureOffset = new Vector2(zRotation / 360, xRotation / 360);
             }
         }
 
+        /// <summary>
+        /// Function to switch charging on and off based on player distance.
+        /// </summary>
         private void Charging()
         {
             // Charging
@@ -308,11 +359,16 @@ namespace BallTag
             }
         }
 
+        /// <summary>
+        /// Function trying to find random point on NavMesh as a destination.
+        /// </summary>
+        /// <param name="radius">Radius around the enemy in which to search</param>
+        /// <returns>Random point when succeded, current enemy position otherwise.</returns>
         public Vector3 RandomNavmeshLocation(float radius)
         {
             // Have some momentum
             Vector3 moveDir = transform.position - lastPosition;
-            // Generate random NavMesh point
+            // Generate random NavMesh point based on current position and last direction of travel.
             UnityEngine.Random.InitState(System.Environment.TickCount);
             Vector3 randomDirection = transform.position +
                 moveDir * momentumFactor +
@@ -326,6 +382,10 @@ namespace BallTag
             return finalPosition;
         }
 
+        /// <summary>
+        /// Move carried objects with the enemy.
+        /// </summary>
+        /// <param name="what">GameObject carried by the enemy.</param>
         private void Carry(GameObject what)
         {
             what.transform.position = new Vector3(
@@ -335,6 +395,11 @@ namespace BallTag
                 );
         }
 
+        /// <summary>
+        /// Function that updates amount of life and checks
+        /// if enemy lost in which case it ends the level.
+        /// </summary>
+        /// <param name="boost">Level boost to add if obtained.</param>
         private void ProcessLife(float boost = 0f)
         {
             life = boost > 0 ? life + boost : life - Time.deltaTime;
@@ -346,6 +411,9 @@ namespace BallTag
             }
         }
 
+        /// <summary>
+        /// Function for updating new level if the player won.
+        /// </summary>
         private void UnlockLevel()
         {
             if (SceneManager.GetActiveScene().buildIndex >= PlayerPrefs.GetInt(REACHED_IND_KEY, 0))
@@ -355,31 +423,6 @@ namespace BallTag
                 PlayerPrefs.Save();
             }
         }
-
-        void OnTriggerEnter(Collider other)
-        {
-            // Apply power-ups
-            if (other.gameObject.CompareTag("Jumping"))
-            {
-                // Debug.Log("Enemy can jump");
-                // Allow NavMeshLinks?
-            }
-            if (other.gameObject.CompareTag("Life"))
-            {
-                ProcessLife(5f);
-                // Debug.Log("Enemy got new life.");
-            }
-            if (other.gameObject.CompareTag("SpeedUp"))
-            {
-                // Debug.Log("Enemy is faster?");
-                // Change NavMeshAgent speeds?
-            }
-
-            // Deactivate the collided object (making it disappear).
-            other.gameObject.GetComponent<MeshRenderer>().enabled = false;
-            other.gameObject.GetComponent<BoxCollider>().enabled = false;
-        }
-
+   
     }
-
 }
