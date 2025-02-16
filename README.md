@@ -14,6 +14,4 @@ As presentation was required for this project, [there](./Prezentace.pdf) is one,
 
 You can try the game build for web on [the project's GitHub Page](https://jirivalasek.github.io/BallTagGame/).
 
-This version is for demo purposes only and has some drawbacks:
-- Quit does not do anything
-- Mobile (touch) support is not implemented
+This version is for demo purposes only and may have some issues.
