@@ -135,7 +135,6 @@ namespace BallTag
             // Store the X and Y components of the movement.
             movementX = movementVector.x;
             movementY = movementVector.y;
-            Debug.Log(String.Format("key {0}:{1}",movementX,movementY));
             enemyController.started = true;
             started = true;
         }

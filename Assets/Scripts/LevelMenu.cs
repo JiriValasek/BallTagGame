@@ -25,12 +25,12 @@ public class LevelMenu : MonoBehaviour
         {
             levelButtons[i].interactable = false;
         }
-        for (int i = 0;i <= PlayerPrefs.GetInt(UNLOCKED_LEVEL_KEY); i++)
+        for (int i = 1;i <= PlayerPrefs.GetInt(UNLOCKED_LEVEL_KEY); i++)
         {
-            int sceneIndex = SceneUtility.GetBuildIndexByScenePath("Scenes/Level " + (i+1));
+            int sceneIndex = SceneUtility.GetBuildIndexByScenePath("Scenes/Level " + (i));
             if (sceneIndex > -1)
             {
-                levelButtons[i].interactable = true;
+                levelButtons[i-1].interactable = true;
             }
             
         }
